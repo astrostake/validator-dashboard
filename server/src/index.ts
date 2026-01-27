@@ -42,7 +42,7 @@ app.use("/api", validatorRoutes);
 // STATIC FILES & REACT SPA (PRIORITY 2)
 // ===================================================================
 
-const CLIENT_BUILD_PATH = path.join(__dirname, "../client/dist");
+const CLIENT_BUILD_PATH = path.join(__dirname, "../../client/dist");
 
 app.use(express.static(CLIENT_BUILD_PATH));
 
