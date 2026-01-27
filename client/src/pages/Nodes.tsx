@@ -25,6 +25,7 @@ interface ValidatorData {
   id: string;
   label: string;
   chainName: string;
+  logoUrl?: string;
   valAddress: string;
   consensusAddress?: string;
   
@@ -37,7 +38,7 @@ interface ValidatorData {
   
   // Status
   jailed: boolean;
-  active: boolean; // Derived from status usually
+  active: boolean; 
   votingPower: number;
   
   // Config Flags
@@ -103,6 +104,7 @@ export default function Nodes() {
             id: w.id,
             label: w.label,
             chainName: w.chain.name,
+            logoUrl: w.chain.logoUrl,
             valAddress: w.validator?.addresses?.operator || "",
             consensusAddress: w.validator?.addresses?.consensus || "",
             
@@ -339,8 +341,19 @@ export default function Nodes() {
                  {/* Card Header */}
                  <div className="p-5 border-b border-border/60 bg-secondary/20 flex justify-between items-start">
                      <div className="flex items-start gap-3">
-                         <div className={cn("p-2 rounded-lg mt-1", val.jailed ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary")}>
-                            {val.jailed ? <LockKey size={20} weight="fill"/> : <Pulse size={20} weight="fill"/>}
+                         
+                         <div className={cn(
+                             "w-11 h-11 rounded-lg mt-0.5 flex items-center justify-center overflow-hidden shrink-0 border transition-all",
+                             val.jailed 
+                               ? "bg-destructive/10 border-destructive/20 text-destructive" 
+                               : "bg-primary/10 border-primary/20 text-primary"
+                         )}>
+                            {val.logoUrl ? (
+                                <img src={val.logoUrl} alt={val.chainName} className="w-full h-full object-cover" />
+                            ) : (
+                                // Fallback to Icon
+                                val.jailed ? <LockKey size={22} weight="fill"/> : <Pulse size={22} weight="fill"/>
+                            )}
                          </div>
                          <div>
                              <div className="flex items-center gap-2">

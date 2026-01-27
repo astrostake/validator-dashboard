@@ -26,7 +26,9 @@ interface Chain {
   name: string;
   priceUsd: number;
   decimals: number;
+  logoUrl?: string;
 }
+
 interface WalletData {
   id: string;
   label: string;
@@ -34,6 +36,7 @@ interface WalletData {
   balances: { total: string; staked: string; rewards: string; commission: string; valuation?: { totalUsd: number } };
   validator?: { status: { jailed: boolean; tokens: string } };
 }
+
 interface Proposal {
   proposalId: string;
   chain: { name: string };
@@ -55,6 +58,8 @@ export default function Dashboard() {
   // Data List
   const [topChains, setTopChains] = useState<any[]>([]);
   const [urgentProposals, setUrgentProposals] = useState<any[]>([]);
+  
+  const [chainLogos, setChainLogos] = useState<Record<string, string>>({});
 
   // --- Fetch Logic ---
   useEffect(() => {
@@ -84,7 +89,7 @@ export default function Dashboard() {
           let totalAum = 0;
           const aumByChain: Record<string, number> = {};
           const stakeByChain: Record<string, number> = {};
-          const chainMap: Record<string, { name: string; value: number; count: number }> = {};
+          const chainMap: Record<string, { name: string; value: number; count: number; logoUrl?: string }> = {};
           let totalPortfolio = 0;
 
           // Process Validators
@@ -112,12 +117,27 @@ export default function Dashboard() {
              const val = w.balances.valuation?.totalUsd || 0;
              totalPortfolio += val;
              
-             if(!chainMap[w.chain.name]) chainMap[w.chain.name] = { name: w.chain.name, value: 0, count: 0 };
+             if(!chainMap[w.chain.name]) {
+                chainMap[w.chain.name] = { 
+                  name: w.chain.name, 
+                  value: 0, 
+                  count: 0,
+                  logoUrl: w.chain.logoUrl
+                };
+             }
              chainMap[w.chain.name].value += val;
              chainMap[w.chain.name].count += 1;
           });
 
-          // Set Chart Data dengan warna konstan
+          const extractedLogos: Record<string, string> = {};
+          Object.values(chainMap).forEach((c) => {
+             if (c.logoUrl) {
+                extractedLogos[c.name] = c.logoUrl;
+             }
+          });
+          setChainLogos(extractedLogos);
+
+          // Set Chart Data
           setAumChartData({
             labels: Object.keys(aumByChain),
             datasets: [{
@@ -256,7 +276,7 @@ export default function Dashboard() {
                    {loading ? <Skeleton className="h-[200px] w-full rounded-lg" /> : 
                      (aumChartData && aumChartData.datasets[0].data.length > 0 ? 
                        <div className="flex flex-col sm:flex-row items-center gap-6 h-[220px]">
-                           {/* Chart */}
+                        {/* Chart */}
                            <div className="h-[140px] w-[140px] shrink-0 relative">
                                <Doughnut 
                                  data={aumChartData} 
@@ -273,7 +293,7 @@ export default function Dashboard() {
                                    </div>
                                </div>
                            </div>
-                           
+
                            {/* Legend List */}
                            <div className="flex-1 w-full h-full min-w-0 py-2">
                                <ScrollArea className="h-full pr-4">
@@ -317,7 +337,7 @@ export default function Dashboard() {
                    {loading ? <Skeleton className="h-[200px] w-full rounded-lg" /> : 
                      (stakeChartData && stakeChartData.datasets[0].data.length > 0 ? 
                        <div className="flex flex-col sm:flex-row items-center gap-6 h-[220px]">
-                           {/* Chart */}
+                        {/* Chart */}
                            <div className="h-[140px] w-[140px] shrink-0 relative">
                                <Doughnut 
                                  data={stakeChartData} 
@@ -334,7 +354,7 @@ export default function Dashboard() {
                                    </div>
                                </div>
                            </div>
-                           
+
                            {/* Legend List */}
                            <div className="flex-1 w-full h-full min-w-0 py-2">
                                <ScrollArea className="h-full pr-4">
@@ -381,9 +401,23 @@ export default function Dashboard() {
                         {topChains.map((c) => (
                            <div key={c.name} className="flex items-center justify-between p-2 hover:bg-secondary/20 rounded-lg transition-colors">
                               <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center font-bold text-xs border border-border">
-                                    {c.name.substring(0,2).toUpperCase()}
+                                 <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center font-bold text-xs border border-border overflow-hidden shrink-0">
+                                    {c.logoUrl ? (
+                                       <img 
+                                          src={c.logoUrl} 
+                                          alt={c.name} 
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                             (e.target as HTMLImageElement).style.display = 'none';
+                                             (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                          }}
+                                       />
+                                    ) : (
+                                       <span>{c.name.substring(0,2).toUpperCase()}</span>
+                                    )}
+                                    {c.logoUrl && <span className="hidden">{c.name.substring(0,2).toUpperCase()}</span>}
                                  </div>
+                                 
                                  <div>
                                     <div className="text-sm font-medium">{c.name}</div>
                                     <div className="text-xs text-muted-foreground">{c.count} Wallet(s)</div>
@@ -429,7 +463,14 @@ export default function Dashboard() {
                         {urgentProposals.map((p) => (
                            <div key={p.proposalId + p.chain.name} className="p-4 rounded-lg border bg-card hover:bg-secondary/50 transition flex flex-col gap-2 group cursor-pointer">
                                <div className="flex justify-between items-start">
-                                   <Badge variant="outline" className="text-[10px] uppercase bg-background group-hover:bg-secondary border-border">{p.chain.name}</Badge>
+                                   
+                                   {/* BADGE CHAIN: Menggunakan Logo dari State 'chainLogos' */}
+                                   <Badge variant="outline" className="text-[10px] uppercase bg-background group-hover:bg-secondary border-border flex items-center gap-1.5 pl-1 pr-2">
+                                      {chainLogos[p.chain.name] && (
+                                         <img src={chainLogos[p.chain.name]} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                      )}
+                                      {p.chain.name}
+                                   </Badge>
                                    <div className="flex items-center gap-1.5 text-xs text-orange-500 font-medium bg-orange-500/10 px-2 py-0.5 rounded-full">
                                       <Clock weight="fill" />
                                       {new Date(p.voting.endTime).toLocaleDateString()}

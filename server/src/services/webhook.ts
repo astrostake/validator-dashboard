@@ -6,7 +6,7 @@ import { CONFIG } from "../config";
 import { formatToken } from "../utils/helpers";
 import type { Wallet, Chain } from "../types";
 
-import { version } from "../../package.json";
+import { version } from "../../../package.json";
 
 // Extends Wallet for internal use to ensure chain data is accessible
 interface WalletWithChain extends Omit<Wallet, 'chain'> {

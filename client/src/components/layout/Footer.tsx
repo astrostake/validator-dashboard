@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export function Footer() {
   const [dbStatus, setDbStatus] = useState<'connected' | 'error' | 'loading'>('loading');
-  const [version] = useState("v1.4.0-beta"); 
+  const [version] = useState(`v${__APP_VERSION__}`); 
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -28,10 +28,9 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-card/50 backdrop-blur mt-auto">
-      {/* Ubah Flexbox menjadi Grid 3 Kolom agar simetris */}
+      
       <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
         
-        {/* KIRI: Rata Kiri (md:justify-start) */}
         <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 text-sm text-muted-foreground order-2 md:order-1">
           <span className="font-semibold text-foreground flex items-center gap-1.5">
             <Lightning weight="fill" className="text-primary" /> Validator Monitor
@@ -40,7 +39,6 @@ export function Footer() {
           <span className="text-xs md:text-sm">&copy; {new Date().getFullYear()} AstroStake.</span>
         </div>
 
-        {/* TENGAH: Rata Tengah (justify-center) */}
         <div className="flex justify-center order-1 md:order-2">
             <div className="flex items-center gap-4 text-xs font-mono bg-secondary/50 px-3 py-1.5 rounded-full border border-border shadow-sm">
                 <div className="flex items-center gap-1.5">
@@ -64,7 +62,6 @@ export function Footer() {
             </div>
         </div>
 
-        {/* KANAN: Rata Kanan (md:justify-end) */}
         <div className="flex items-center justify-center md:justify-end gap-4 order-3">
           <a href="https://github.com/astrostake/validator-dashboard" target="_blank" rel="noreferrer" 
              className="text-muted-foreground hover:text-white transition-colors p-2 hover:bg-secondary rounded-full" title="Source Code">

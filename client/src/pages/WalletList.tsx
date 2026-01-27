@@ -27,7 +27,8 @@ interface Chain {
     id: string; 
     name: string; 
     token: { denom: string; decimals: number }; 
-    priceUsd?: number; 
+    priceUsd?: number;
+    logoUrl?: string;
 }
 
 interface WalletData {
@@ -124,15 +125,12 @@ export default function WalletList() {
       return wallets.filter(w => String(w.chain?.id) === String(selectedChainFilter));
   }, [wallets, selectedChainFilter]);
 
-  // UPDATE: Kalkulasi Dual Mode (USD & Token)
   const stats = useMemo(() => {
-      // Init USD
       let totalAssetsUsd = 0;
       let totalStakedUsd = 0;
       let totalRewardsUsd = 0;
       let totalCommissionUsd = 0;
 
-      // Init Token (Hanya dipakai jika 1 chain dipilih)
       let totalAssetsToken = 0;
       let totalStakedToken = 0;
       let totalRewardsToken = 0;
@@ -147,19 +145,16 @@ export default function WalletList() {
           const rewards = parseFloat(w.balances.rewards || "0");
           const commission = parseFloat(w.validator?.earnings?.commission || "0");
 
-          // Hitung USD (selalu dihitung)
           totalAssetsUsd += (available + staked) * price;
           totalStakedUsd += staked * price;
           totalRewardsUsd += rewards * price;
           totalCommissionUsd += commission * price;
 
-          // Hitung Token (Untuk display spesifik chain)
           totalAssetsToken += (available + staked);
           totalStakedToken += staked;
           totalRewardsToken += rewards;
           totalCommissionToken += commission;
           
-          // Ambil simbol token dari wallet pertama yang ditemukan
           if (!tokenSymbol && w.chain?.token?.denom) {
               tokenSymbol = w.chain.token.denom;
           }
@@ -206,7 +201,6 @@ export default function WalletList() {
     } catch (e) { console.error(e); }
   };
 
-  // Edit Logic
   const openEdit = (w: WalletData) => {
     setEditingWallet({ id: w.id, label: w.label, valAddress: w.valAddress || "" });
     setEditModalOpen(true);
@@ -224,7 +218,6 @@ export default function WalletList() {
     finally { setIsSavingEdit(false); }
   };
 
-  // Webhook Logic
   const openWebhook = async (w: WalletData) => {
     setCurrentWebhookWallet(w);
     setWebhookModalOpen(true);
@@ -268,12 +261,10 @@ export default function WalletList() {
     finally { setIsTestingWebhook(false); }
   };
 
-  // Helpers
   const shorten = (str: string) => str ? `${str.slice(0, 8)}...${str.slice(-4)}` : '';
   const formatMoney = (val: string | number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(typeof val === 'string' ? parseFloat(val) : val);
   const formatUsd = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
-  // UPDATE: Render Component Helper untuk Stats
   const renderStatValue = (tokenVal: number, usdVal: number) => {
       if (selectedChainFilter === "all") {
           return <div className="text-2xl font-bold font-mono tracking-tight relative z-10">{formatUsd(usdVal)}</div>;
@@ -322,7 +313,7 @@ export default function WalletList() {
           </div>
       </div>
 
-      {/* 2. Stats Cards (UPDATED) */}
+      {/* 2. Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-5 border-border bg-card relative overflow-hidden group">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
@@ -420,8 +411,22 @@ export default function WalletList() {
                                   >
                                       <div className="flex items-center justify-between">
                                           <div className="flex items-center gap-3 overflow-hidden">
-                                              <div className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-                                                  {w.chain?.name.substring(0,2).toUpperCase()}
+                                              <div className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0 overflow-hidden">
+                                                  {w.chain?.logoUrl ? (
+                                                      <img 
+                                                          src={w.chain.logoUrl} 
+                                                          alt={w.chain.name} 
+                                                          className="w-full h-full object-cover"
+                                                          onError={(e) => {
+                                                              // Fallback jika gambar error
+                                                              (e.target as HTMLImageElement).style.display = 'none';
+                                                              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                                          }}
+                                                      />
+                                                  ) : (
+                                                      <span>{w.chain?.name.substring(0,2).toUpperCase()}</span>
+                                                  )}
+                                                  {w.chain?.logoUrl && <span className="hidden">{w.chain?.name.substring(0,2).toUpperCase()}</span>}
                                               </div>
                                               <div className="min-w-0">
                                                   <div className="flex items-center gap-2">

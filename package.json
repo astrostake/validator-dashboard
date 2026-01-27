@@ -1,14 +1,22 @@
 {
   "name": "validator-dashboard",
+  "version": "2.1.0",
   "private": true,
+  "description": "Multi-chain Cosmos infrastructure monitor and validator dashboard",
   "scripts": {
+    "postinstall": "npm run install:all",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
-    "build": "cd client && npm run build && cd ../server && npm run build"
+    
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "start": "cd server && npm start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
-  }
+  },
+  "author": "AstroStake",
+  "license": "ISC"
 }

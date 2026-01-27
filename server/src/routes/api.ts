@@ -10,6 +10,7 @@ import { getGlobalGovernance } from "../services/validatorMonitor";
 import { lockManager } from "../utils/lock";
 import { logger } from "../utils/logger";
 import { calculateUsdValue } from "../utils/helpers";
+import { CHAIN_ASSETS } from "../config";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -41,7 +42,8 @@ function formatWalletResponse(wallet: any) {
       name: wallet.chain.name,
       denom: wallet.chain.denom,
       decimals: wallet.chain.decimals,
-      priceUsd: wallet.chain.priceUsd
+      priceUsd: wallet.chain.priceUsd,
+      logoUrl: CHAIN_ASSETS[wallet.chain.name] || null
     },
     
     // Balance Information

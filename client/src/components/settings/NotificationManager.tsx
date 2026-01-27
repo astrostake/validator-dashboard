@@ -4,7 +4,8 @@ import {
   Wallet, ShieldCheck, PencilSimple, 
   PaperPlaneRight, ArrowsClockwise, DownloadSimple,
   Warning, Bell, CheckCircle, 
-  Gear, Globe, Broadcast, Money, Prohibit
+  Gear, Globe, Broadcast, Money, Prohibit,
+  Pulse, Scroll, ArrowsLeftRight, TrendUp
 } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
@@ -20,14 +21,24 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-// Types
 interface WalletSetting {
   id: string;
   label: string;
   chainName: string;
+  logoUrl?: string; 
   address: string;
   valAddress?: string;
   webhookConfigured: boolean;
+  
+  // Data Summary Notifikasi
+  activeChannels: {
+    walletTx: boolean;
+    balanceChange: boolean;
+    ownDelegations: boolean;
+    missedBlocks: boolean;
+    governance: boolean;
+    delegatorChange: boolean;
+  };
 }
 
 interface NotificationForm {
@@ -51,9 +62,9 @@ export function NotificationManager({ wallets, onRefresh }: { wallets: WalletSet
 
   // State
   const [selectedWallet, setSelectedWallet] = useState<WalletSetting | null>(null);
-  
-  // Settings Modal State
   const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  // Form State
   const [form, setForm] = useState<NotificationForm>({
       webhookUrl: "", notifyWalletTx: false, notifyBalanceChange: false, balanceThreshold: 100, 
       notifyOwnDelegations: false, notifyValidatorTx: false, notifyMissedBlocks: false, 
@@ -120,7 +131,6 @@ export function NotificationManager({ wallets, onRefresh }: { wallets: WalletSet
       if(!selectedWallet) return;
       setIsTesting(true);
       try {
-          // Save first to ensure backend has the URL
           await axios.post(`${API_URL}/wallet/${selectedWallet.id}/webhook`, form);
           await axios.post(`${API_URL}/wallet/${selectedWallet.id}/webhook/test`, { testUrl: form.webhookUrl });
           toast({ title: "Test Sent", description: "Check your Discord channel." });
@@ -175,10 +185,17 @@ export function NotificationManager({ wallets, onRefresh }: { wallets: WalletSet
             <Card key={w.id} className="border-border/60 shadow-sm hover:shadow-md transition-all duration-300 group">
                 <CardHeader className="flex flex-row items-start justify-between pb-2 bg-secondary/10 border-b border-border/50">
                     <div className="flex gap-3 items-center">
-                        <div className={cn("p-2.5 rounded-lg border border-border/50 shadow-sm", w.valAddress ? "bg-purple-500/10 text-purple-400" : "bg-blue-500/10 text-blue-400")}>
-                            {w.valAddress ? <ShieldCheck weight="fill" className="text-xl"/> : <Wallet weight="fill" className="text-xl"/>}
+                        <div className={cn(
+                            "w-11 h-11 rounded-lg flex items-center justify-center overflow-hidden border shadow-sm shrink-0", 
+                            w.valAddress ? "bg-purple-500/10 border-purple-500/20" : "bg-blue-500/10 border-blue-500/20"
+                        )}>
+                            {w.logoUrl ? (
+                                <img src={w.logoUrl} alt={w.chainName} className="w-full h-full object-cover" />
+                            ) : (
+                                w.valAddress ? <ShieldCheck weight="fill" className="text-xl text-purple-400"/> : <Wallet weight="fill" className="text-xl text-blue-400"/>
+                            )}
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <h4 className="font-bold text-sm truncate max-w-[140px]">{w.label}</h4>
                             <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-mono text-muted-foreground bg-background/80">
                                 {w.chainName}
@@ -186,12 +203,12 @@ export function NotificationManager({ wallets, onRefresh }: { wallets: WalletSet
                         </div>
                     </div>
                     {w.webhookConfigured ? (
-                        <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
-                            <Broadcast weight="fill" /> Active
+                        <div className="text-emerald-500 animate-pulse" title="Webhook Configured">
+                            <Broadcast weight="fill" size={16} />
                         </div>
                     ) : (
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium bg-secondary px-2 py-1 rounded-full">
-                            <Prohibit weight="bold" /> Off
+                        <div className="text-muted-foreground/30" title="No Webhook">
+                            <Prohibit weight="bold" size={16} />
                         </div>
                     )}
                 </CardHeader>
@@ -202,12 +219,59 @@ export function NotificationManager({ wallets, onRefresh }: { wallets: WalletSet
                     </div>
                     
                     <div className="space-y-2">
-                         <div className="flex justify-between text-xs">
-                             <span className="text-muted-foreground">Type</span>
-                             <span className={cn("font-medium", w.valAddress ? "text-purple-400" : "text-blue-400")}>
-                                 {w.valAddress ? "Validator Node" : "Standard Wallet"}
-                             </span>
+                         <div className="flex justify-between text-xs mb-1">
+                             <span className="text-muted-foreground">Enabled Alerts</span>
                          </div>
+                         
+                         {w.webhookConfigured ? (
+                             <div className="flex flex-wrap gap-1.5 min-h-[24px]">
+                                {/* Badge: Wallet TX */}
+                                {w.activeChannels.walletTx && (
+                                    <Badge variant="outline" className="text-[9px] h-5 gap-1 px-1.5 border-blue-500/30 text-blue-600 bg-blue-500/10">
+                                        <ArrowsLeftRight weight="bold" /> Tx
+                                    </Badge>
+                                )}
+                                
+                                {/* Badge: Balance */}
+                                {w.activeChannels.balanceChange && (
+                                    <Badge variant="outline" className="text-[9px] h-5 gap-1 px-1.5 border-orange-500/30 text-orange-600 bg-orange-500/10">
+                                        <TrendUp weight="bold" /> Bal
+                                    </Badge>
+                                )}
+
+                                {/* Badge: Uptime (Validator Only) */}
+                                {w.activeChannels.missedBlocks && (
+                                    <Badge variant="outline" className="text-[9px] h-5 gap-1 px-1.5 border-red-500/30 text-red-600 bg-red-500/10">
+                                        <Pulse weight="fill" /> Uptime
+                                    </Badge>
+                                )}
+
+                                {/* Badge: Governance (Validator Only) */}
+                                {w.activeChannels.governance && (
+                                    <Badge variant="outline" className="text-[9px] h-5 gap-1 px-1.5 border-purple-500/30 text-purple-600 bg-purple-500/10">
+                                        <Scroll weight="fill" /> Gov
+                                    </Badge>
+                                )}
+                                
+                                {/* Badge: Delegations */}
+                                {(w.activeChannels.delegatorChange || w.activeChannels.ownDelegations) && (
+                                    <Badge variant="outline" className="text-[9px] h-5 gap-1 px-1.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                                        <DownloadSimple weight="bold" /> Staking
+                                    </Badge>
+                                )}
+
+                                {/* Jika tidak ada yang spesifik aktif tapi webhook on */}
+                                {!Object.values(w.activeChannels).some(Boolean) && (
+                                    <span className="text-[10px] text-muted-foreground italic flex items-center pt-0.5">
+                                        <Warning className="mr-1"/> No alerts enabled
+                                    </span>
+                                )}
+                             </div>
+                         ) : (
+                             <div className="text-[10px] text-muted-foreground italic pt-1 flex items-center">
+                                 <Prohibit className="mr-1"/> Webhook not configured
+                             </div>
+                         )}
                     </div>
                 </CardContent>
 
@@ -223,7 +287,7 @@ export function NotificationManager({ wallets, onRefresh }: { wallets: WalletSet
           ))}
       </div>
 
-      {/* --- SETTINGS DIALOG (Enterprise Layout with Tabs) --- */}
+      {/* --- SETTINGS DIALOG --- */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto gap-0 p-0">
               <DialogHeader className="p-6 pb-2">

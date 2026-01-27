@@ -11,9 +11,20 @@ interface WalletSetting {
   id: string;
   label: string;
   chainName: string;
+  logoUrl?: string;
   address: string;
   valAddress?: string;
   webhookConfigured: boolean;
+  
+  // Ringkasan status notifikasi
+  activeChannels: {
+    walletTx: boolean;
+    balanceChange: boolean;
+    ownDelegations: boolean;
+    missedBlocks: boolean;
+    governance: boolean;
+    delegatorChange: boolean;
+  };
 }
 
 export default function Settings() {
@@ -33,9 +44,22 @@ export default function Settings() {
             id: w.id,
             label: w.label,
             chainName: w.chain.name,
+            logoUrl: w.chain.logoUrl,
             address: w.address,
             valAddress: w.validator?.addresses?.operator,
-            webhookConfigured: w.notifications?.webhookConfigured || false
+            webhookConfigured: w.notifications?.webhookConfigured || false,
+            
+            // --- MAPPING DETAIL NOTIFIKASI ---
+            activeChannels: {
+                walletTx: w.notifications?.settings?.walletTransactions || false,
+                balanceChange: w.notifications?.settings?.balanceChanges?.enabled || false,
+                ownDelegations: w.validator?.notifications?.ownDelegations || false,
+                
+                // Validator Specific
+                missedBlocks: w.validator?.notifications?.missedBlocksAlerts || false,
+                governance: w.validator?.notifications?.governanceAlerts || false,
+                delegatorChange: w.validator?.notifications?.incomingDelegations || false
+            }
         }));
         setWallets(all);
       }

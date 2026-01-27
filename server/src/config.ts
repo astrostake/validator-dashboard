@@ -23,6 +23,15 @@ export const CONFIG = {
 
 };
 
+export const CHAIN_ASSETS: Record<string, string> = {
+  "Lumera": "https://astrostake.xyz/logos/projects/lumera-protocol.png",
+  "Lava": "https://astrostake.xyz/logos/projects/lava.png",
+  "Epix": "https://astrostake.xyz/logos/projects/epix.png",
+  "Hippo": "https://astrostake.xyz/logos/projects/hippo-protocol.png",
+  "Cysic": "https://astrostake.xyz/logos/projects/cysic.png",
+  "Lumen": "https://astrostake.xyz/logos/projects/lumen.png",
+};
+
 export const INITIAL_CHAINS: ChainConfig[] = [
   {
     name: "Lumera",
