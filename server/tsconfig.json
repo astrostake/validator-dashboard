@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* Basic Setup */
+    "target": "ES2020",                                  /* modern JS support for Node.js */
+    "module": "CommonJS",                                /* Standard module system for Node apps */
+    "moduleResolution": "node",                          /* Resolves modules using Node.js logic */
+    "rootDir": "./src",                                  /* Source directory */
+    "outDir": "./dist",                                  /* Compilation output directory */
+    "sourceMap": true,                                   /* Enables debugging with source maps */
+
+    /* Interoperability & Compatibility */
+    "esModuleInterop": true,                             /* Fixes imports for Express and Axios */
+    "allowSyntheticDefaultImports": true,                /* Allow default imports from modules without default exports */
+    "resolveJsonModule": true,                           /* Allows importing .json config files */
+
+    /* Strictness & Safety */
+    "strict": true,                                      /* Enable all strict type-checking options */
+    "skipLibCheck": true,                                /* Prevents errors from node_modules definitions */
+    "forceConsistentCasingInFileNames": true,            /* Ensures case-sensitivity matches across OS */
+    
+    /* Syntax Compatibility */
+    "verbatimModuleSyntax": false,                       /* Disabled to prevent strict ESM syntax errors */
+    "noUncheckedSideEffectImports": false                /* Ensures legacy library imports work without issues */
+  },
+  "include": ["src/**/*"],                               /* Source files to include in compilation */
+  "exclude": ["node_modules", "dist"]                    /* Folders to ignore during build */
+}

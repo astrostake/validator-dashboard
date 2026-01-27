@@ -1,0 +1,126 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./monitor.db"
+}
+
+model Chain {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  rpc         String
+  rest        String
+  denom       String
+  decimals    Int
+  coingeckoId String?  @default("")
+  priceUsd    Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  wallets     Wallet[]
+}
+
+model Wallet {
+  id                Int     @id @default(autoincrement())
+  address           String
+  valAddress        String?
+  withdrawalAddress String?
+  consensusAddress  String?
+  label             String
+  chainId           Int
+  chain             Chain   @relation(fields: [chainId], references: [id], onDelete: Cascade)
+
+  tokens            String?
+  status            String?
+
+  // Balances
+  available  Float @default(0)
+  staked     Float @default(0)
+  rewards    Float @default(0)
+  commission Float @default(0)
+
+  // Status
+  isSyncing         Boolean   @default(false)
+  lastSyncHeartbeat DateTime? // Heartbeat system for stuck detection
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Webhook Settings
+  webhookUrl           String?
+  notifyWalletTx       Boolean @default(false)
+  notifyValidatorTx    Boolean @default(false)
+  notifyOwnDelegations Boolean @default(false)
+  notifyBalanceChange  Boolean @default(false)
+  balanceThreshold     Float   @default(0)
+
+  // Validator Monitoring
+  notifyMissedBlocks    Boolean   @default(false)
+  missedBlocksThreshold Int       @default(10)
+  missedBlocksCooldown  Int       @default(5) // Cooldown in minutes
+  lastMissedBlocksAlert DateTime? // Last time alert was sent
+  notifyRecovery        Boolean   @default(true) // Notify when recovered
+  notifyGovernance      Boolean   @default(false)
+
+  // Internal State
+  lastMissedBlocksCount  Int?
+  lastJailedStatus       Boolean   @default(false)
+  lastUptimeCheck        DateTime?
+  lastCheckedProposalId  Int       @default(0)
+  lastFinishedProposalId Int       @default(0)
+  lastGovernanceCheck    DateTime?
+
+  walletTransactions    WalletTransaction[]
+  validatorTransactions ValidatorTransaction[]
+
+  @@unique([address, chainId])
+  @@index([chainId])
+  @@index([valAddress])
+}
+
+model WalletTransaction {
+  id        Int      @id @default(autoincrement())
+  hash      String
+  height    Int
+  type      String
+  timestamp DateTime @default(now())
+  amount    String?
+  sender    String?
+  recipient String?
+  direction String? // IN, OUT, SELF
+  rawTx     String?
+  priceAtTx Float    @default(0)
+
+  walletId Int
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@unique([hash, walletId])
+  @@index([walletId, height])
+  @@index([height])
+}
+
+model ValidatorTransaction {
+  id           Int      @id @default(autoincrement())
+  hash         String
+  height       Int
+  type         String
+  timestamp    DateTime @default(now())
+  amount       String?
+  delegator    String?
+  validator    String?
+  dstValidator String?
+  category     String   @default("own") // "own" | "incoming"
+  rawTx        String?
+  priceAtTx    Float    @default(0)
+
+  walletId Int
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@unique([hash, walletId])
+  @@index([walletId, height])
+  @@index([height])
+  @@index([validator])
+  @@index([category])
+}
