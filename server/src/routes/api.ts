@@ -1424,6 +1424,42 @@ router.get("/transaction/:hash/raw", async (req, res) => {
   }
 });
 
+router.get("/transactions/latest", async (req: Request, res: Response) => {
+  try {
+    const limit = 10;
+
+    // Ambil 10 terakhir dari masing-masing tabel
+    const [walletTxs, validatorTxs] = await Promise.all([
+      prisma.walletTransaction.findMany({
+        take: limit,
+        orderBy: { timestamp: "desc" },
+        include: { wallet: { include: { chain: true } } }
+      }),
+      prisma.validatorTransaction.findMany({
+        take: limit,
+        orderBy: { timestamp: "desc" },
+        include: { wallet: { include: { chain: true } } }
+      })
+    ]);
+
+    // Gabungkan, urutkan berdasarkan waktu, dan ambil 10 teratas
+    const allLatest = [
+      ...walletTxs.map(tx => formatTransactionResponse(tx, 'wallet')),
+      ...validatorTxs.map(tx => formatTransactionResponse(tx, 'validator'))
+    ]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, limit);
+
+    res.json({
+      success: true,
+      data: allLatest
+    });
+  } catch (error) {
+    logger.error("Error fetching latest global transactions:", error);
+    res.status(500).json({ success: false, error: { message: "Failed to fetch global transactions" } });
+  }
+});
+
 // ===================================================================
 // GOVERNANCE
 // ===================================================================
