@@ -21,9 +21,8 @@ import { cn } from "@/lib/utils";
 interface Chain {
   id: string;
   name: string;
-  // FIX: Sesuaikan dengan API backend (flat structure)
-  denom: string;     
-  decimals: number;  
+  denom?: string;     
+  decimals?: number;  
 }
 
 interface WalletData {
@@ -169,7 +168,7 @@ export function WalletTransactions({ wallet }: WalletTransactionsProps) {
         .replace(/\+/g, ' & ');
   };
 
-  const getIcon = (type: string, isOut: boolean) => {
+  const getIcon = (type: string) => {
     const t = type.toLowerCase();
     const size = 16;
     if (t.includes('send')) return <ArrowUpRight size={size} className="text-orange-400" />;
@@ -368,7 +367,7 @@ export function WalletTransactions({ wallet }: WalletTransactionsProps) {
                                             )}
                                             <div className="flex items-center gap-2 text-xs text-foreground/80">
                                                 <div className="p-1 rounded bg-secondary/40 text-muted-foreground group-hover:bg-background group-hover:text-foreground transition-colors shrink-0">
-                                                    {getIcon(tx.type, false)}
+                                                    {getIcon(tx.type)}
                                                 </div>
                                                 
                                                 <span className="truncate font-mono text-xs text-muted-foreground/80" title={tx.transaction?.recipient || tx.transaction?.sender || tx.transaction?.validator}>
