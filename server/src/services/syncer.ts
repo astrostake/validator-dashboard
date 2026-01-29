@@ -1,4 +1,4 @@
-// src/services/syncer.ts (FIXED VERSION - Enhanced with Proper Validation)
+// src/services/syncer.ts (Enhanced with TxParser for Complete Parsing)
 
 import { PrismaClient, Prisma } from "@prisma/client";
 import axios from "axios";
@@ -12,41 +12,6 @@ import { lockManager } from "../utils/lock";
 const prisma = new PrismaClient();
 
 const STUCK_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
-
-/**
- * Helper: Validate transaction data before processing
- * ✅ NEW: Prevent undefined values from reaching Prisma
- */
-function isValidTransaction(t: any): boolean {
-  if (!t) {
-    logger.warn('[VALIDATION] Transaction object is null/undefined');
-    return false;
-  }
-  
-  if (!t.txhash || typeof t.txhash !== 'string') {
-    logger.warn('[VALIDATION] Invalid txhash:', t.txhash);
-    return false;
-  }
-  
-  if (!t.height) {
-    logger.warn('[VALIDATION] Missing height for tx:', t.txhash);
-    return false;
-  }
-  
-  if (!t.timestamp) {
-    logger.warn('[VALIDATION] Missing timestamp for tx:', t.txhash);
-    return false;
-  }
-  
-  // Validate timestamp can be converted to Date
-  const timestamp = new Date(t.timestamp);
-  if (isNaN(timestamp.getTime())) {
-    logger.warn('[VALIDATION] Invalid timestamp format:', t.timestamp);
-    return false;
-  }
-  
-  return true;
-}
 
 /**
  * Helper: Extract all messages including nested ones (e.g., in MsgExec)
@@ -296,15 +261,7 @@ export async function backfillWalletHistory(walletId: number): Promise<void> {
 
           await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             for (const t of txs) {
-              // ✅ FIX: Validate transaction data BEFORE processing
-              if (!isValidTransaction(t)) {
-                logger.warn(`[INDEXER] ⚠️ Skipping invalid transaction:`, {
-                  txhash: t?.txhash,
-                  height: t?.height,
-                  timestamp: t?.timestamp
-                });
-                continue;
-              }
+              if (!t.txhash || !t.height) continue;
               
               const h = Number(t.height);
               const rawTxJson = JSON.stringify(t);
@@ -474,52 +431,32 @@ export async function backfillWalletHistory(walletId: number): Promise<void> {
                       }
                     }
 
-                    // ✅ FIX: Add validation and safe fallbacks
-                    const validatorData = {
-                      hash: t.txhash, // Already validated
-                      height: h, // Already validated
-                      timestamp: new Date(t.timestamp), // Already validated
-                      type: txType || 'Unknown', // Ensure never undefined
-                      amount: aggregatedAmount || null, // Safe fallback
-                      delegator: firstMsg.delegator || null, // Safe fallback
-                      validator: firstMsg.validator || wallet.valAddress || '', // Ensure not undefined
-                      dstValidator: firstMsg.dstValidator || null, // Safe fallback
-                      category: category || 'own', // Safe fallback with default
-                      rawTx: rawTxJson || '{}', // Safe fallback
-                      walletId: wallet.id,
-                      priceAtTx: currentTokenPrice || 0
-                    };
-
-                    // ✅ FIX: Extra validation before create
-                    if (!validatorData.validator) {
-                      logger.warn(`[INDEXER] ⚠️ Skipping validator tx with no validator address:`, {
-                        hash: t.txhash,
-                        height: h
-                      });
-                      continue;
-                    }
-
-                    try {
-                      await tx.validatorTransaction.create({
-                        data: validatorData
-                      });
-                      newTxCount++;
-                      
-                      if (wallet.webhookUrl && category === 'incoming' && wallet.notifyValidatorTx) {
-                        await sendDiscordNotification(
-                          wallet, 
-                          t, 
-                          txType, 
-                          aggregatedAmount, 
-                          'validator-incoming'
-                        );
+                    await tx.validatorTransaction.create({
+                      data: {
+                        hash: t.txhash, 
+                        height: h, 
+                        timestamp: new Date(t.timestamp),
+                        type: txType, 
+                        amount: aggregatedAmount || null,
+                        delegator: firstMsg.delegator || null,
+                        validator: firstMsg.validator || wallet.valAddress,
+                        dstValidator: firstMsg.dstValidator || null,
+                        category,
+                        rawTx: rawTxJson, 
+                        walletId: wallet.id,
+                        priceAtTx: currentTokenPrice
                       }
-                    } catch (createError) {
-                      logger.error(`[INDEXER] ❌ Failed to create validator transaction:`, {
-                        error: createError,
-                        data: validatorData
-                      });
-                      // Don't throw - continue processing other transactions
+                    });
+                    newTxCount++;
+                    
+                    if (wallet.webhookUrl && category === 'incoming' && wallet.notifyValidatorTx) {
+                      await sendDiscordNotification(
+                        wallet, 
+                        t, 
+                        txType, 
+                        aggregatedAmount, 
+                        'validator-incoming'
+                      );
                     }
                   }
                 }
