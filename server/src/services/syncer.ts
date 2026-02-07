@@ -684,14 +684,17 @@ export async function syncAllWallets(): Promise<void> {
           }
 
           // Trigger tx indexing (non-blocking)
-          backfillWalletHistory(wallet.id).catch(err => 
-            logger.error(`[SYNC] TX indexing failed for ${wallet.label}`, err)
-          );
+          try {
+            await backfillWalletHistory(wallet.id);
+          } catch (err) {
+            logger.error(`[SYNC] TX indexing failed for ${wallet.label}`, err);
+          }
 
         } catch (dbError: any) {
           if (dbError.code === 'P2025') continue;
           throw dbError;
         }
+        
       } catch (error: unknown) {
         logger.error(`[SYNC ERROR] ${wallet.label}:`, error);
       }
