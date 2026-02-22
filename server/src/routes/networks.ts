@@ -20,7 +20,9 @@ const toSlug = (name: string) => name.toLowerCase().replace(/\s+/g, '-');
 // ─── GET /api/networks ────────────────────────────────────────────────────────
 
 router.get("/networks", (req: Request, res: Response) => {
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  // Respect X-Forwarded-Proto from nginx/reverse proxy for correct https detection
+  const proto = req.get("x-forwarded-proto") || req.protocol;
+  const baseUrl = `${proto}://${req.get("host")}`;
 
   const networks = INITIAL_CHAINS.map((chain) => {
     const slug = toSlug(chain.name);
