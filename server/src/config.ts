@@ -39,6 +39,8 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     rest: "https://lumera-api.linknode.org",
     denom: "ulume",
     decimals: 6,
+    chainId: "lumera-mainnet-1",
+    bech32Prefix: "lumera",
   },
   {
     name: "Lava",
@@ -47,6 +49,8 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     denom: "ulava",
     coingeckoId: "lava-network",
     decimals: 6,
+    chainId: "lava-mainnet-1",
+    bech32Prefix: "lava@",
   },
   {
     name: "Epix",
@@ -54,6 +58,8 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     rest: "https://api.epix.zone",
     denom: "aepix",
     decimals: 18,
+    chainId: "epix_1916-1",
+    bech32Prefix: "epix",
   },
   {
     name: "Hippo",
@@ -61,7 +67,9 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     rest: "https://api.hippo-protocol.com",
     denom: "ahp",
     coingeckoId: 'hippo-protocol',
-    decimals: 18
+    decimals: 18,
+    chainId: "hippo-protocol",
+    bech32Prefix: "hippo",
   },
   {
     name: "Cysic",
@@ -69,13 +77,17 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     rest: "https://rest.cysic.xyz",
     denom: "CGT",
     coingeckoId: 'cysic',
-    decimals: 18
+    decimals: 18,
+    chainId: "cysicmint_4399-1",
+    bech32Prefix: "cysic",
   },
   {
     name: "Lumen",
     rpc: "https://lumen-rpc.linknode.org",
     rest: "https://lumen-api.linknode.org",
     denom: "ulmn",
-    decimals: 6
+    decimals: 6,
+    chainId: "lumen",
+    bech32Prefix: "lmn",
   }
 ];

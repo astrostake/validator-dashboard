@@ -10,6 +10,7 @@ import TxExplorer from "@/pages/TxExplorer";
 import Governance from "@/pages/Governance";
 import Nodes from "./pages/Nodes";
 import Settings from "./pages/Settings";
+import AuthzPage from "./pages/Authz";
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
             <Route path="/governance" element={<Governance />} />
             <Route path="/nodes" element={<Nodes />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/authz" element={<AuthzPage />} />
           </Routes>
         </main>
         <Footer />

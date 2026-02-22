@@ -16,6 +16,7 @@ import { logger } from "./utils/logger";
 import apiRoutes from "./routes/api";
 import webhookRoutes from "./routes/webhook";
 import validatorRoutes from "./routes/validator";
+import networkRoutes from "./routes/networks";
 
 // ===================================================================
 // APP INITIALIZATION
@@ -37,6 +38,8 @@ app.use(express.static(path.join(__dirname, "../client/")));
 app.use("/api", apiRoutes);
 app.use("/api", webhookRoutes);
 app.use("/api", validatorRoutes);
+app.use("/api", networkRoutes);
+app.use("/", networkRoutes);
 
 // ===================================================================
 // STATIC FILES & REACT SPA (PRIORITY 2)

@@ -8,7 +8,8 @@ import {
   Wallet,      // Icon untuk Wallets
   Globe,       // Icon untuk Explorer
   Graph,       // Icon untuk Nodes
-  Gear         // Icon untuk Settings (BARU)
+  Gear,         // Icon untuk Settings (BARU)
+  Key
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,11 @@ export function Navbar() {
             <Link to="/nodes" className={getLinkClass("/nodes")}>
               <Graph weight={location.pathname === "/nodes" ? "fill" : "bold"} />
               Nodes
+            </Link>
+
+            <Link to="/authz" className={getLinkClass("/authz")}>
+              <Key weight={location.pathname === "/authz" ? "fill" : "bold"} />
+              Authz
             </Link>
 
             <Link to="/governance" className={getLinkClass("/governance")}>

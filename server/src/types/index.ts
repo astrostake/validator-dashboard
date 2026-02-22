@@ -14,6 +14,8 @@ export interface ChainConfig {
   denom: string;
   decimals: number;
   coingeckoId?: string;
+  chainId?: string;
+  bech32Prefix?: string;
 }
 
 // --- API & Response Types ---
