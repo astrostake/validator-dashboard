@@ -121,7 +121,7 @@ export default function Governance() {
 
   const getExplorerLink = (p: Proposal) => {
       const slug = p.chainName.toLowerCase().replace(/\s+/g, '-');
-      return `https://www.mintscan.io/${slug}/proposals/${p.proposalId}`;
+      return `https://stake.astrostake.xyz/${slug}/governance/${p.proposalId}`;
   };
 
   return (
@@ -285,7 +285,7 @@ export default function Governance() {
                  {selectedProposal && (
                      <Button asChild className="gap-2">
                          <a href={getExplorerLink(selectedProposal)} target="_blank" rel="noopener noreferrer">
-                             View on Mintscan <ArrowSquareOut />
+                             View on AstroStake <ArrowSquareOut />
                          </a>
                      </Button>
                  )}

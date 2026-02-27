@@ -52,38 +52,43 @@ export function VoteWithdrawTab({ activeTab, network, connectedAddress, getSigne
   const loadProposals = async () => {
     setIsLoadingProposals(true);
     setProposals([]);
+    
     try {
-      // Try v1beta1 first
-      const res = await fetch(
-        `${network.rest}/cosmos/gov/v1beta1/proposals?proposal_status=2`
-      );
-      const json = await res.json();
-      if (json.proposals?.length) {
-        setProposals(json.proposals.map((p: any) => ({
-          proposal_id:     p.proposal_id,
-          title:           p.content?.title || `Proposal #${p.proposal_id}`,
+      // 1. Try v1beta1 first
+      try {
+        const res = await fetch(
+          `${network.rest}/cosmos/gov/v1beta1/proposals?proposal_status=2`
+        );
+        const json = await res.json();
+        if (json.proposals?.length) {
+          setProposals(json.proposals.map((p: any) => ({
+            proposal_id:     p.proposal_id,
+            title:           p.content?.title || `Proposal #${p.proposal_id}`,
+            status:          p.status,
+            voting_end_time: p.voting_end_time,
+          })));
+          return; // Aman untuk early return karena ada di dalam block try utama
+        }
+      } catch { /* fallthrough */ }
+
+      // 2. Try v1
+      try {
+        const res = await fetch(
+          `${network.rest}/cosmos/gov/v1/proposals?proposal_status=PROPOSAL_STATUS_VOTING_PERIOD`
+        );
+        const json = await res.json();
+        setProposals((json.proposals || []).map((p: any) => ({
+          proposal_id:     p.id,
+          title:           p.title || `Proposal #${p.id}`,
           status:          p.status,
           voting_end_time: p.voting_end_time,
         })));
-        return;
+      } catch (e: any) {
+        toast({ title: "Failed to load proposals", description: e.message, variant: "destructive" });
       }
-    } catch { /* fallthrough */ }
-
-    try {
-      // Try v1
-      const res = await fetch(
-        `${network.rest}/cosmos/gov/v1/proposals?proposal_status=PROPOSAL_STATUS_VOTING_PERIOD`
-      );
-      const json = await res.json();
-      setProposals((json.proposals || []).map((p: any) => ({
-        proposal_id:     p.id,
-        title:           p.title || `Proposal #${p.id}`,
-        status:          p.status,
-        voting_end_time: p.voting_end_time,
-      })));
-    } catch (e: any) {
-      toast({ title: "Failed to load proposals", description: e.message, variant: "destructive" });
+      
     } finally {
+      // Ini AKAN SELALU dijalankan, baik saat error maupun saat "return" sukses di atas
       setIsLoadingProposals(false);
     }
   };
