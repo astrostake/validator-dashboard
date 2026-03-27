@@ -96,6 +96,7 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     rpc: "https://rpc.cosmoshub-main.ccvalidators.com",
     rest: "https://rest.cosmoshub-main.ccvalidators.com",
     denom: "uatom",
+    coingeckoId: 'cosmos',
     decimals: 6,
     chainId: "cosmoshub-4",
     bech32Prefix: "cosmos",
