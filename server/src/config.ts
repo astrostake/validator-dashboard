@@ -90,7 +90,7 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     chainId: "lumen",
     bech32Prefix: "lmn",
   },
-    {
+  {
     name: "Cosmos",
     rpc: "https://rpc.cosmoshub-main.ccvalidators.com",
     rest: "https://rest.cosmoshub-main.ccvalidators.com",
