@@ -89,5 +89,14 @@ export const INITIAL_CHAINS: ChainConfig[] = [
     decimals: 6,
     chainId: "lumen",
     bech32Prefix: "lmn",
+  },
+    {
+    name: "Cosmos",
+    rpc: "https://rpc.cosmoshub-main.ccvalidators.com",
+    rest: "https://rest.cosmoshub-main.ccvalidators.com",
+    denom: "uatom",
+    decimals: 6,
+    chainId: "cosmoshub-4",
+    bech32Prefix: "cosmos",
   }
 ];
