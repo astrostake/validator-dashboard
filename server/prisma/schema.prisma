@@ -16,6 +16,8 @@ model Chain {
   rest        String
   denom       String
   decimals    Int
+  chainId      String  @default("")
+  bech32Prefix String  @default("")
   coingeckoId String?  @default("")
   priceUsd    Float    @default(0)
   createdAt   DateTime @default(now())

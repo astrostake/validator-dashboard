@@ -30,6 +30,7 @@ export const CHAIN_ASSETS: Record<string, string> = {
   "Hippo": "https://astrostake.xyz/logos/projects/hippo-protocol.png",
   "Cysic": "https://astrostake.xyz/logos/projects/cysic.png",
   "Lumen": "https://astrostake.xyz/logos/projects/lumen.png",
+  "Cosmos": "https://ping.pub/logos/cosmos.svg",
 };
 
 export const INITIAL_CHAINS: ChainConfig[] = [
